@@ -12,7 +12,7 @@
     "version": "npm run build",
     "postversion": "git push && git push --tags"
   },
-  "author": "Teaflex",
+  "author": "tkeske",
   "license": "ISC",
   "dependencies": {
     "lodash.merge": "^4.6.2",
