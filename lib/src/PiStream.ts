@@ -15,7 +15,7 @@ const Splitter = require('stream-split');
 export class PiStreamServer {
 
     /**
-     * Static logger of PiStreamer. You can change the logger by giving 
+     * Static logger of PiStreamer. You can change the logger by giving
      * a winston.Logger object.
      * ```ts
      * PiStreamServer.log = winston.createLogger(...);
@@ -35,7 +35,7 @@ export class PiStreamServer {
             framerate: 12,
             imxfx: ImageEffects.none,
             brightness: 50,
-            saturation: 50, 
+            saturation: 50,
             sharpness: 50,
             contrast: 50
         },
@@ -58,7 +58,7 @@ export class PiStreamServer {
 
     /**
      * Set the options of the stream.
-     * @param options 
+     * @param options
      */
     public setOptions(options: StreamOptions) {
         this.options = merge(this.defaultOptions, options);
@@ -79,7 +79,7 @@ export class PiStreamServer {
     protected startFeed = () => {
         if(this.readStream == null || this.readStream == undefined)
             this.createFeed();
-        
+
         var rStream = this.streamer!.stdout;
         rStream = rStream.pipe(new Splitter(this.buffer));
         rStream.on('data', this.broadcast);
@@ -100,7 +100,7 @@ export class PiStreamServer {
             else if(opt != "vFlip" && opt != "hFlip")
                 opts.push(current);
         }
-        
+
         PiStreamServer.log.info(`Start of stream !`);
 
         this.streamer = spawn('raspivid', opts, {detached: true});
@@ -108,7 +108,7 @@ export class PiStreamServer {
         this.streamer.on('error', (error) => {
             PiStreamServer.log.error(error.message);
         })
-        
+
         this.streamer!.on('exit', (code) => {
             var msg = (code === null)? 'Stream Exit' : `Failure code ${code}`;
             PiStreamServer.log.log((code === null)? 'info': 'error', msg);
@@ -141,7 +141,7 @@ export class PiStreamServer {
         var userLimit = (this.options.limit! > 0)? this.options.limit! : 0;
         var condition = (userLimit == 0)? true : (this.wsServer.clients.size <= userLimit);
         var self = this;
-        
+
 
         if(condition) {
             this.streamClients.push(socket);
@@ -158,7 +158,7 @@ export class PiStreamServer {
                 PiStreamServer.log.info(`Someone just left. (${self.wsServer.clients.size} user(s) online.)`);
                 if(self.streamer != null)
                     self.readStream!.destroy();
-                
+
                 if(self.options.dynamic) {
                     if(self.wsServer.clients.size == 0 && self.streamer != null)
                         self.stopFeed();
@@ -174,17 +174,17 @@ export class PiStreamServer {
                         //Start the stream
                         case "REQUESTSTREAM":
                             if(self.streamer != null && self.streamer != undefined)
-                                throw "A stream already exists.";
+                           //     throw "A stream already exists.";
                             self.startFeed();
                         break;
-                        
+
                         //Stop the stream
                         case "STOPSTREAM":
                             if(self.streamer == null || self.streamer == undefined)
                                 throw "There's no stream to stop.";
                             self.stopFeed();
                         break;
-        
+
                         //Toggle pause the stream
                         case "clientPAUSESTREAM":
                             if(self.streamClients.includes(socket)) {
@@ -192,25 +192,25 @@ export class PiStreamServer {
                                 self.streamClients.splice(id-1,1);
                             }
                             else
-                                self.streamClients.push(socket);  
+                                self.streamClients.push(socket);
                         break;
-        
+
                         case "globalPAUSESTREAM":
                             if(self.streamer == null || self.streamer != undefined)
                                 throw "There's no stream to pause.";
-                            if(self.readStream!.isPaused())                        
+                            if(self.readStream!.isPaused())
                                 self.readStream!.read()
                             else
                                 self.readStream!.pause()
                         break;
-                        
+
                         default:
                             validAction = false;
                             break;
                     }
                     if(validAction)
                         PiStreamServer.log.info(`Action incoming: ${action}`);
-                } 
+                }
                 catch (error) {
                     PiStreamServer.log.error(error);
                 }
@@ -220,7 +220,7 @@ export class PiStreamServer {
 }
 
 /**
- * Creates an instance of PiStreamServer and returns the Http server linked to it. 
+ * Creates an instance of PiStreamServer and returns the Http server linked to it.
  * @param requestListner - Request listener.
  * @param video - Options of the stream.
  */
@@ -239,7 +239,7 @@ export const createClient = (path='.') => {
         var file = 'http-live-player.js';
         if(fs.existsSync(path))
             fs.createReadStream(join(__dirname, '../../vendor/'+file)).pipe(fs.createWriteStream(join(path, file)));
-    } 
+    }
     catch (error) {
         PiStreamServer.log.error(error);
     }
